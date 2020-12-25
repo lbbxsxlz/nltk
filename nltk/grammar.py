@@ -113,7 +113,6 @@ class Nonterminal(object):
             hashable.
         """
         self._symbol = symbol
-        self._hash = hash(symbol)
 
     def symbol(self):
         """
@@ -142,7 +141,7 @@ class Nonterminal(object):
         return self._symbol < other._symbol
 
     def __hash__(self):
-        return self._hash
+        return hash(self._symbol)
 
     def __repr__(self):
         """
@@ -290,7 +289,6 @@ class Production(object):
             )
         self._lhs = lhs
         self._rhs = tuple(rhs)
-        self._hash = hash((self._lhs, self._rhs))
 
     def lhs(self):
         """
@@ -376,7 +374,7 @@ class Production(object):
 
         :rtype: int
         """
-        return self._hash
+        return hash((self._lhs, self._rhs))
 
 
 
@@ -772,7 +770,8 @@ class CFG(object):
         if flexible:
             return step2
         step3 = CFG.remove_unitary_rules(step2)
-        return step3
+        step4 = CFG(step3.start(),list(set(step3.productions())))
+        return step4
 
     @classmethod
     def remove_unitary_rules(cls, grammar):
@@ -1030,7 +1029,6 @@ class FeatureValueType(object):
 
     def __init__(self, value):
         self._value = value
-        self._hash = hash(value)
 
     def __repr__(self):
         return "<%s>" % self._value
@@ -1047,7 +1045,7 @@ class FeatureValueType(object):
         return self._value < other._value
 
     def __hash__(self):
-        return self._hash
+        return hash(self._value)
 
 
 
@@ -1273,7 +1271,7 @@ class PCFG(CFG):
 
 
 def induce_pcfg(start, productions):
-    """
+    r"""
     Induce a PCFG grammar from a list of productions.
 
     The probability of a production A -> B C in a PCFG is:
@@ -1459,7 +1457,7 @@ def read_grammar(input, nonterm_parser, probabilistic=False, encoding=None):
     return (start, productions)
 
 
-_STANDARD_NONTERM_RE = re.compile("( [\w/][\w/^<>-]* ) \s*", re.VERBOSE)
+_STANDARD_NONTERM_RE = re.compile(r"( [\w/][\w/^<>-]* ) \s*", re.VERBOSE)
 
 
 def standard_nonterm_parser(string, pos):

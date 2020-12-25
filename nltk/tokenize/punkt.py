@@ -218,7 +218,9 @@ class PunktLanguageVars(object):
     _re_word_start = r"[^\(\"\`{\[:;&\#\*@\)}\]\-,]"
     """Excludes some characters from starting word tokens"""
 
-    _re_non_word_chars = r"(?:[?!)\";}\]\*:@\'\({\[])"
+    @property
+    def _re_non_word_chars(self):
+        return "(?:[)\";}\]\*:@\'\({\[%s])" % re.escape("".join(set(self.sent_end_chars) - {"."}))
     """Characters that cannot appear within words"""
 
     _re_multi_char_punct = r"(?:\-{2,}|\.{2,}|(?:\.\s){2,}\.)"
@@ -1456,7 +1458,7 @@ class PunktSentenceTokenizer(PunktBaseClass, TokenizerI):
             # token doesn't match, see if adding whitespace helps.
             # If so, then use the version with whitespace.
             if text[pos : pos + len(tok)] != tok:
-                pat = "\s*".join(re.escape(c) for c in tok)
+                pat = r"\s*".join(re.escape(c) for c in tok)
                 m = re.compile(pat).match(text, pos)
                 if m:
                     tok = m.group()
@@ -1477,7 +1479,7 @@ class PunktSentenceTokenizer(PunktBaseClass, TokenizerI):
                 yield sentence
                 sentence = ""
 
-        # If the last sentence is emtpy, discard it.
+        # If the last sentence is empty, discard it.
         if sentence:
             yield sentence
 
